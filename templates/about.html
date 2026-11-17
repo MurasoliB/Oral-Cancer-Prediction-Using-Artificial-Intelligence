@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Architecture & Pipeline — OralVision AI</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/glass.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='oralvision.ico') }}">
+    <style>
+        .arch-container {
+            max-width: 1440px;
+            margin: var(--sp-10) auto;
+            padding: 0 var(--sp-8);
+        }
+
+        .pipeline-flow-diagram {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-xl);
+            padding: var(--sp-8) var(--sp-6);
+            margin: var(--sp-8) 0;
+            overflow-x: auto;
+            gap: var(--sp-4);
+        }
+
+        .flow-node {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            min-width: 140px;
+            position: relative;
+        }
+
+        .flow-node-icon {
+            width: 64px;
+            height: 64px;
+            border-radius: var(--radius-md);
+            background: linear-gradient(135deg, var(--color-surface-elevated), var(--color-surface-hover));
+            border: 1px solid var(--color-border-accent);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.6rem;
+            color: var(--color-electric-cyan);
+            margin-bottom: var(--sp-3);
+            box-shadow: 0 8px 24px var(--color-cyan-glow);
+            transition: transform var(--trans-fast);
+        }
+
+        .flow-node:hover .flow-node-icon {
+            transform: scale(1.08);
+            border-color: #38BDF8;
+        }
+
+        .flow-node-title {
+            font-weight: 700;
+            font-size: 0.95rem;
+            color: var(--color-text-primary);
+        }
+
+        .flow-node-sub {
+            font-size: 0.75rem;
+            color: var(--color-text-muted);
+            margin-top: 2px;
+        }
+
+        .flow-arrow {
+            font-size: 1.4rem;
+            color: var(--color-text-muted);
+            opacity: 0.6;
+        }
+
+        .arch-spec-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: var(--sp-6);
+            margin-top: var(--sp-8);
+        }
+
+        @media (max-width: 992px) {
+            .arch-spec-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <nav class="public-navbar">
+        <a href="{{ url_for('index') }}" class="public-brand">
+            <div class="sidebar-brand-icon">
+                <i class="fas fa-heartbeat"></i>
+            </div>
+            <div>
+                <div class="brand-name">OralVision AI</div>
+                <div class="brand-badge">Clinical Diagnostics</div>
+            </div>
+        </a>
+
+        <ul class="public-nav-menu">
+            <li><a href="{{ url_for('index') }}" class="public-nav-link">Home</a></li>
+            <li><a href="{{ url_for('about') }}" class="public-nav-link active">AI Architecture</a></li>
+            <li><a href="{{ url_for('recommendations') }}" class="public-nav-link">Clinical Guidelines</a></li>
+        </ul>
+
+        <div class="public-nav-actions">
+            <button class="icon-btn-action theme-toggle-btn" title="Toggle Theme">
+                <i class="fas fa-moon"></i>
+            </button>
+            <a href="{{ url_for('upload_page') }}" class="btn-prime">
+                <i class="fas fa-microscope"></i> Start Screening
+            </a>
+        </div>
+    </nav>
+
+    <div class="arch-container">
+        <div style="text-align: center; max-width: 800px; margin: 0 auto var(--sp-8);">
+            <div class="telemetry-indicator-pill" style="margin-bottom: var(--sp-3);">
+                <i class="fas fa-brain"></i>
+                <span>Deep Learning Engineering</span>
+            </div>
+            <h1 style="font-size: 2.8rem; margin-bottom: var(--sp-3);">System Architecture & Neural Pipeline</h1>
+            <p style="color: var(--color-text-secondary); font-size: 1.1rem;">
+                A comprehensive examination of our DenseNet201 transfer learning architecture, preprocessing standards, softmax thresholding, and gradient-weighted class activation mapping (Grad-CAM).
+            </p>
+        </div>
+
+        <!-- Animated AI Processing Flow Diagram -->
+        <div class="pipeline-flow-diagram">
+            <div class="flow-node">
+                <div class="flow-node-icon"><i class="fas fa-camera"></i></div>
+                <div class="flow-node-title">Clinical Image</div>
+                <div class="flow-node-sub">Raw oral specimen</div>
+            </div>
+            <div class="flow-arrow"><i class="fas fa-chevron-right"></i></div>
+
+            <div class="flow-node">
+                <div class="flow-node-icon"><i class="fas fa-sliders-h"></i></div>
+                <div class="flow-node-title">Preprocessing</div>
+                <div class="flow-node-sub">224&times;224 RGB [0,1]</div>
+            </div>
+            <div class="flow-arrow"><i class="fas fa-chevron-right"></i></div>
+
+            <div class="flow-node">
+                <div class="flow-node-icon"><i class="fas fa-network-wired"></i></div>
+                <div class="flow-node-title">DenseNet201</div>
+                <div class="flow-node-sub">201 Dense Blocks</div>
+            </div>
+            <div class="flow-arrow"><i class="fas fa-chevron-right"></i></div>
+
+            <div class="flow-node">
+                <div class="flow-node-icon"><i class="fas fa-calculator"></i></div>
+                <div class="flow-node-title">Classification</div>
+                <div class="flow-node-sub">Softmax & Margin</div>
+            </div>
+            <div class="flow-arrow"><i class="fas fa-chevron-right"></i></div>
+
+            <div class="flow-node">
+                <div class="flow-node-icon"><i class="fas fa-fire"></i></div>
+                <div class="flow-node-title">Grad-CAM</div>
+                <div class="flow-node-sub">conv5 Activation Map</div>
+            </div>
+            <div class="flow-arrow"><i class="fas fa-chevron-right"></i></div>
+
+            <div class="flow-node">
+                <div class="flow-node-icon" style="border-color: var(--color-success); color: var(--color-success);"><i class="fas fa-file-medical-alt"></i></div>
+                <div class="flow-node-title">Clinical Report</div>
+                <div class="flow-node-sub">ReportLab PDF</div>
+            </div>
+        </div>
+
+        <!-- Technical Specification Deep Dives -->
+        <div class="arch-spec-grid">
+            <div class="card-clinical">
+                <div class="card-header-flex">
+                    <div class="card-title-lg">
+                        <i class="fas fa-network-wired" style="color: var(--color-electric-cyan);"></i>
+                        <span>DenseNet201 Backbone</span>
+                    </div>
+                    <span class="badge-status normal">201 Layers</span>
+                </div>
+                <p style="color: var(--color-text-secondary); margin-bottom: var(--sp-4); font-size: 0.95rem; line-height: 1.65;">
+                    DenseNet (Densely Connected Convolutional Networks) overcomes the vanishing-gradient problem by connecting each layer to every other layer within a dense block. Instead of summing activations like ResNet, DenseNet concatenates feature maps, encouraging feature reuse and reducing parameter redundancy.
+                </p>
+                <div style="background: var(--glass-bg-subtle); padding: var(--sp-4); border-radius: var(--radius-sm); border: 1px solid var(--color-border); font-family: 'JetBrains Mono'; font-size: 0.82rem; color: var(--color-text-primary);">
+                    <div>&bull; Total Parameters: 18,568,259</div>
+                    <div>&bull; Conv Blocks: conv1, conv2_block, ..., conv5_block</div>
+                    <div>&bull; Final Feature Layer: conv5_block32_concat</div>
+                </div>
+            </div>
+
+            <div class="card-clinical">
+                <div class="card-header-flex">
+                    <div class="card-title-lg">
+                        <i class="fas fa-fire" style="color: #f59e0b;"></i>
+                        <span>Explainable Grad-CAM</span>
+                    </div>
+                    <span class="badge-status precancer">conv5 Target</span>
+                </div>
+                <p style="color: var(--color-text-secondary); margin-bottom: var(--sp-4); font-size: 0.95rem; line-height: 1.65;">
+                    Gradient-weighted Class Activation Mapping computes the gradient of the predicted class score with respect to the feature activation map of the final convolutional layer. The resulting coarse localization heatmap identifies discriminatory regions in the oral lesion without altering model weights.
+                </p>
+                <div style="background: var(--glass-bg-subtle); padding: var(--sp-4); border-radius: var(--radius-sm); border: 1px solid var(--color-border); font-family: 'JetBrains Mono'; font-size: 0.82rem; color: var(--color-text-primary);">
+                    <div>&bull; Target Layer: conv5_block32_concat</div>
+                    <div>&bull; Color Map: OpenCV JET Palette</div>
+                    <div>&bull; Superimposition: 60% Image + 40% Heatmap</div>
+                </div>
+            </div>
+
+            <div class="card-clinical">
+                <div class="card-header-flex">
+                    <div class="card-title-lg">
+                        <i class="fas fa-balance-scale" style="color: var(--color-medical-teal);"></i>
+                        <span>Certainty Safeguard & Abstention</span>
+                    </div>
+                    <span class="badge-status normal">&ge; 60% / &ge; 10%</span>
+                </div>
+                <p style="color: var(--color-text-secondary); margin-bottom: var(--sp-4); font-size: 0.95rem; line-height: 1.65;">
+                    To protect clinical validity and prevent overconfident hallucinations on atypical photographic artifacts, the inference pipeline enforces mathematical thresholds: predictions require at least <strong>60% confidence</strong> and a <strong>10% margin separation</strong> from the runner-up class.
+                </p>
+                <div style="background: var(--glass-bg-subtle); padding: var(--sp-4); border-radius: var(--radius-sm); border: 1px solid var(--color-border); font-family: 'JetBrains Mono'; font-size: 0.82rem; color: var(--color-text-primary);">
+                    <div>&bull; High Confidence: &ge; 80.0%</div>
+                    <div>&bull; Moderate Confidence: 60.0% &ndash; 79.9%</div>
+                    <div>&bull; Low / Inconclusive: &lt; 60.0% or Margin &lt; 10.0%</div>
+                </div>
+            </div>
+
+            <div class="card-clinical">
+                <div class="card-header-flex">
+                    <div class="card-title-lg">
+                        <i class="fas fa-shield-alt" style="color: var(--color-success);"></i>
+                        <span>Verified Preprocessing Standard</span>
+                    </div>
+                    <span class="badge-status normal">Pillow RGB</span>
+                </div>
+                <p style="color: var(--color-text-secondary); margin-bottom: var(--sp-4); font-size: 0.95rem; line-height: 1.65;">
+                    Incoming image bytes are loaded via Pillow to confirm valid image headers, stripped of alpha channels, converted to 3-channel RGB, resized through bilinear interpolation to 224&times;224, and scaled into 32-bit floating point representations strictly bound to [0.0, 1.0].
+                </p>
+                <div style="background: var(--glass-bg-subtle); padding: var(--sp-4); border-radius: var(--radius-sm); border: 1px solid var(--color-border); font-family: 'JetBrains Mono'; font-size: 0.82rem; color: var(--color-text-primary);">
+                    <div>&bull; Input Shape: (None, 224, 224, 3)</div>
+                    <div>&bull; Data Type: float32 normalized</div>
+                    <div>&bull; Checksum Verification: SHA-256 Validated</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>

@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clinical Guidelines & Recommendations — OralVision AI</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/glass.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='oralvision.ico') }}">
+    <style>
+        .rec-container {
+            max-width: 1440px;
+            margin: var(--sp-10) auto;
+            padding: 0 var(--sp-8);
+        }
+
+        .guideline-tabs {
+            display: flex;
+            gap: var(--sp-2);
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-lg);
+            padding: var(--sp-2);
+            margin-bottom: var(--sp-8);
+            overflow-x: auto;
+        }
+
+        .guideline-tab-btn {
+            flex: 1;
+            padding: var(--sp-3) var(--sp-4);
+            border-radius: var(--radius-md);
+            background: transparent;
+            border: none;
+            color: var(--color-text-secondary);
+            font-weight: 700;
+            font-size: 0.92rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: var(--sp-2);
+            white-space: nowrap;
+            transition: all var(--trans-fast);
+        }
+
+        .guideline-tab-btn:hover {
+            color: var(--color-text-primary);
+            background: var(--color-surface-hover);
+        }
+
+        .guideline-tab-btn.active {
+            background: linear-gradient(135deg, var(--color-medical-teal), var(--color-electric-cyan));
+            color: #FFF;
+            box-shadow: 0 4px 14px var(--color-cyan-glow);
+        }
+
+        .guideline-content-panel {
+            display: none;
+            animation: fadeIn 0.4s var(--ease-out);
+        }
+
+        .guideline-content-panel.active {
+            display: block;
+        }
+
+        .warning-signs-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: var(--sp-6);
+        }
+
+        .warning-card {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-lg);
+            padding: var(--sp-6);
+            border-top: 4px solid;
+        }
+
+        .warning-card.red { border-top-color: var(--color-danger); }
+        .warning-card.amber { border-top-color: var(--color-warning); }
+        .warning-card.teal { border-top-color: var(--color-medical-teal); }
+
+        @media (max-width: 992px) {
+            .warning-signs-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <nav class="public-navbar">
+        <a href="{{ url_for('index') }}" class="public-brand">
+            <div class="sidebar-brand-icon">
+                <i class="fas fa-heartbeat"></i>
+            </div>
+            <div>
+                <div class="brand-name">OralVision AI</div>
+                <div class="brand-badge">Clinical Diagnostics</div>
+            </div>
+        </a>
+
+        <ul class="public-nav-menu">
+            <li><a href="{{ url_for('index') }}" class="public-nav-link">Home</a></li>
+            <li><a href="{{ url_for('about') }}" class="public-nav-link">AI Architecture</a></li>
+            <li><a href="{{ url_for('recommendations') }}" class="public-nav-link active">Clinical Guidelines</a></li>
+        </ul>
+
+        <div class="public-nav-actions">
+            <button class="icon-btn-action theme-toggle-btn" title="Toggle Theme">
+                <i class="fas fa-moon"></i>
+            </button>
+            <a href="{{ url_for('upload_page') }}" class="btn-prime">
+                <i class="fas fa-microscope"></i> Start Screening
+            </a>
+        </div>
+    </nav>
+
+    <div class="rec-container">
+        <div style="text-align: center; max-width: 800px; margin: 0 auto var(--sp-8);">
+            <div class="telemetry-indicator-pill" style="margin-bottom: var(--sp-3);">
+                <i class="fas fa-book-medical"></i>
+                <span>Practitioner & Patient Guidelines</span>
+            </div>
+            <h1 style="font-size: 2.8rem; margin-bottom: var(--sp-3);">Clinical Recommendations & Prevention</h1>
+            <p style="color: var(--color-text-secondary); font-size: 1.1rem;">
+                Evidence-based oral oncology protocols, symptom recognition matrices, early screening intervals, and specialist referral triggers.
+            </p>
+        </div>
+
+        <!-- Interactive Guidelines Tab Navigation -->
+        <div class="guideline-tabs">
+            <button class="guideline-tab-btn active" onclick="switchTab('warnings', this)">
+                <i class="fas fa-exclamation-triangle"></i> Warning Signs & Red Flags
+            </button>
+            <button class="guideline-tab-btn" onclick="switchTab('risks', this)">
+                <i class="fas fa-smoking-ban"></i> Risk Factors & Etiology
+            </button>
+            <button class="guideline-tab-btn" onclick="switchTab('examination', this)">
+                <i class="fas fa-stethoscope"></i> Clinical Examination
+            </button>
+            <button class="guideline-tab-btn" onclick="switchTab('referral', this)">
+                <i class="fas fa-ambulance"></i> Referral & Biopsy Protocol
+            </button>
+        </div>
+
+        <!-- TAB 1: WARNING SIGNS -->
+        <div class="guideline-content-panel active" id="tab-warnings">
+            <div class="warning-signs-grid">
+                <div class="warning-card red">
+                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--sp-4);">
+                        <span class="badge-status cancer"><i class="fas fa-radiation"></i> Critical Trigger</span>
+                        <i class="fas fa-clock" style="font-size: 1.5rem; color: var(--color-danger);"></i>
+                    </div>
+                    <h3 style="font-size: 1.25rem; margin-bottom: var(--sp-2);">Non-Healing Ulcers (> 2 Weeks)</h3>
+                    <p style="color: var(--color-text-secondary); font-size: 0.92rem; line-height: 1.6; margin-bottom: var(--sp-4);">
+                        Any solitary ulceration of the tongue, floor of mouth, or buccal mucosa persisting beyond 14 days without spontaneous resolution or traumatic explanation.
+                    </p>
+                    <div style="background: var(--glass-bg-subtle); padding: var(--sp-3); border-radius: var(--radius-sm); font-size: 0.85rem; color: var(--color-text-primary);">
+                        <strong>Action:</strong> Urgent referral for scalpel incisional biopsy.
+                    </div>
+                </div>
+
+                <div class="warning-card amber">
+                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--sp-4);">
+                        <span class="badge-status precancer"><i class="fas fa-exclamation-circle"></i> High Risk PMOD</span>
+                        <i class="fas fa-tint" style="font-size: 1.5rem; color: var(--color-warning);"></i>
+                    </div>
+                    <h3 style="font-size: 1.25rem; margin-bottom: var(--sp-2);">Erythroplakia & Leukoplakia</h3>
+                    <p style="color: var(--color-text-secondary); font-size: 0.92rem; line-height: 1.6; margin-bottom: var(--sp-4);">
+                        Persistent velvety red patches (erythroplakia, carrying up to 90% dysplasia risk) or non-wipeable white mucosal plaques (leukoplakia).
+                    </p>
+                    <div style="background: var(--glass-bg-subtle); padding: var(--sp-3); border-radius: var(--radius-sm); font-size: 0.85rem; color: var(--color-text-primary);">
+                        <strong>Action:</strong> Biopsy recommended within 7 to 10 days.
+                    </div>
+                </div>
+
+                <div class="warning-card teal">
+                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--sp-4);">
+                        <span class="badge-status normal"><i class="fas fa-hand-holding-medical"></i> Physical Sign</span>
+                        <i class="fas fa-compress-arrows-alt" style="font-size: 1.5rem; color: var(--color-electric-cyan);"></i>
+                    </div>
+                    <h3 style="font-size: 1.25rem; margin-bottom: var(--sp-2);">Tissue Induration & Fixation</h3>
+                    <p style="color: var(--color-text-secondary); font-size: 0.92rem; line-height: 1.6; margin-bottom: var(--sp-4);">
+                        Firmness or palpable induration upon bimanual palpation, accompanied by decreased tongue motility or unexplained unilateral lymphadenopathy.
+                    </p>
+                    <div style="background: var(--glass-bg-subtle); padding: var(--sp-3); border-radius: var(--radius-sm); font-size: 0.85rem; color: var(--color-text-primary);">
+                        <strong>Action:</strong> Head and neck oncology staging workup.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 2: RISK FACTORS -->
+        <div class="guideline-content-panel" id="tab-risks">
+            <div class="card-clinical" style="margin-bottom: var(--sp-6);">
+                <div class="card-header-flex">
+                    <div class="card-title-lg"><i class="fas fa-smoking" style="color: var(--color-danger);"></i> Tobacco, Betel Quid & Alcohol Synergism</div>
+                </div>
+                <p style="color: var(--color-text-secondary); font-size: 0.95rem; line-height: 1.7; margin-bottom: var(--sp-4);">
+                    Smoking and smokeless tobacco (chewing tobacco, gutkha, paan with areca nut) expose mucosal keratinocytes to tobacco-specific nitrosamines (NNK, NNN). When combined with chronic alcohol consumption, ethanol acts as an organic solvent that dramatically increases mucosal permeability to chemical carcinogens, multiplying relative risk up to 35-fold.
+                </p>
+            </div>
+        </div>
+
+        <!-- TAB 3: EXAMINATION -->
+        <div class="guideline-content-panel" id="tab-examination">
+            <div class="card-clinical">
+                <div class="card-header-flex">
+                    <div class="card-title-lg"><i class="fas fa-user-md" style="color: var(--color-medical-teal);"></i> 7-Step Systematic Visual & Palpatory Protocol</div>
+                </div>
+                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--sp-4); font-size: 0.92rem;">
+                    <div style="background: var(--glass-bg-subtle); padding: var(--sp-4); border-radius: var(--radius-sm); border: 1px solid var(--color-border);">
+                        <strong>1. Labial Mucosa & Vermilion Border:</strong> Evert upper and lower lips; inspect color, symmetry, and dryness.
+                    </div>
+                    <div style="background: var(--glass-bg-subtle); padding: var(--sp-4); border-radius: var(--radius-sm); border: 1px solid var(--color-border);">
+                        <strong>2. Buccal Mucosa & Vestibule:</strong> Retract cheeks bilaterally; inspect Stensen's duct and retro-molar pads.
+                    </div>
+                    <div style="background: var(--glass-bg-subtle); padding: var(--sp-4); border-radius: var(--radius-sm); border: 1px solid var(--color-border);">
+                        <strong>3. Lateral Borders of Tongue:</strong> Grasp tip with sterile gauze; gently retract left and right to inspect posterior thirds.
+                    </div>
+                    <div style="background: var(--glass-bg-subtle); padding: var(--sp-4); border-radius: var(--radius-sm); border: 1px solid var(--color-border);">
+                        <strong>4. Floor of Mouth & Lingual Frenum:</strong> Instruct patient to touch palate with tongue tip; bidigitally palpate sublingual tissue.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 4: REFERRAL PROTOCOL -->
+        <div class="guideline-content-panel" id="tab-referral">
+            <div class="card-clinical" style="border-left: 4px solid var(--color-danger);">
+                <div class="card-header-flex">
+                    <div class="card-title-lg"><i class="fas fa-hospital" style="color: var(--color-danger);"></i> Specialist Referral Pathway</div>
+                </div>
+                <p style="color: var(--color-text-secondary); line-height: 1.7; margin-bottom: var(--sp-4);">
+                    Patients flagged by OralVision AI with high confidence for Oral Malignancy or Persistent Dysplasia should be immediately routed through a 2-Week Wait (2WW) referral to an Oral & Maxillofacial Surgery (OMFS) unit, ENT Head & Neck department, or designated Oncology Cancer Center.
+                </p>
+                <div style="font-size: 0.85rem; color: var(--color-text-muted);">
+                    Include specimen photographs, Grad-CAM attention visualizations, and medical history in clinical handover documents.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    <script>
+        function switchTab(tabId, btn) {
+            document.querySelectorAll('.guideline-tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.guideline-content-panel').forEach(p => p.classList.remove('active'));
+            btn.classList.add('active');
+            document.getElementById('tab-' + tabId).classList.add('active');
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OralVision AI — Intelligent Oral Screening & Explainable AI</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/glass.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='oralvision.ico') }}">
+    <style>
+        /* Hero & Section Specific Styles */
+        .hero-banner {
+            padding: var(--sp-16) var(--sp-8) var(--sp-12);
+            display: grid;
+            grid-template-columns: 1.1fr 0.9fr;
+            gap: var(--sp-8);
+            align-items: center;
+            max-width: 1560px;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        .hero-headline {
+            font-size: 3.6rem;
+            font-weight: 800;
+            line-height: 1.15;
+            letter-spacing: -0.035em;
+            margin-bottom: var(--sp-4);
+        }
+
+        .hero-headline span.gradient-text {
+            background: linear-gradient(135deg, var(--color-electric-cyan) 0%, #38BDF8 50%, var(--color-medical-teal) 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero-subtext {
+            font-size: 1.25rem;
+            color: var(--color-text-secondary);
+            margin-bottom: var(--sp-8);
+            max-width: 620px;
+            line-height: 1.6;
+        }
+
+        .hero-cta-group {
+            display: flex;
+            align-items: center;
+            gap: var(--sp-4);
+            flex-wrap: wrap;
+        }
+
+        .hero-visual-card {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-xl);
+            padding: var(--sp-6);
+            box-shadow: var(--glass-shadow);
+            position: relative;
+            backdrop-filter: blur(20px);
+            animation: floatHero 6s ease-in-out infinite;
+        }
+
+        @keyframes floatHero {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        /* 4-Step Screening Pipeline Grid */
+        .pipeline-steps-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: var(--sp-4);
+            position: relative;
+            margin-top: var(--sp-8);
+        }
+
+        .step-clinical-card {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-lg);
+            padding: var(--sp-5);
+            position: relative;
+            transition: transform var(--trans-fast), border-color var(--trans-fast);
+        }
+
+        .step-clinical-card:hover {
+            transform: translateY(-4px);
+            border-color: var(--color-electric-cyan);
+        }
+
+        .step-index-badge {
+            width: 38px;
+            height: 38px;
+            border-radius: var(--radius-sm);
+            background: linear-gradient(135deg, var(--color-medical-teal), var(--color-electric-cyan));
+            color: #FFF;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 1.1rem;
+            margin-bottom: var(--sp-4);
+        }
+
+        /* 3-Class Taxonomy Cards */
+        .taxonomy-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: var(--sp-6);
+            margin-top: var(--sp-8);
+        }
+
+        .taxonomy-card {
+            border-radius: var(--radius-lg);
+            padding: var(--sp-6);
+            border: 1px solid;
+            background: var(--glass-bg);
+            backdrop-filter: blur(16px);
+        }
+
+        .taxonomy-card.normal { border-color: rgba(22, 160, 133, 0.4); }
+        .taxonomy-card.precancer { border-color: rgba(244, 185, 66, 0.4); }
+        .taxonomy-card.cancer { border-color: rgba(220, 82, 82, 0.4); }
+
+        /* FAQ Accordion */
+        .faq-accordion-item {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-md);
+            margin-bottom: var(--sp-3);
+            overflow: hidden;
+        }
+
+        .faq-question-btn {
+            width: 100%;
+            padding: var(--sp-5);
+            background: transparent;
+            border: none;
+            color: var(--color-text-primary);
+            font-size: 1.05rem;
+            font-weight: 700;
+            text-align: left;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+        }
+
+        .faq-answer-panel {
+            padding: 0 var(--sp-5) var(--sp-5);
+            color: var(--color-text-secondary);
+            font-size: 0.95rem;
+            line-height: 1.65;
+            display: none;
+        }
+
+        .faq-accordion-item.active .faq-answer-panel {
+            display: block;
+        }
+
+        .faq-accordion-item.active .faq-icon {
+            transform: rotate(180deg);
+            color: var(--color-electric-cyan);
+        }
+
+        @media (max-width: 1024px) {
+            .hero-banner { grid-template-columns: 1fr; }
+            .pipeline-steps-grid { grid-template-columns: repeat(2, 1fr); }
+            .taxonomy-grid { grid-template-columns: 1fr; }
+        }
+
+        @media (max-width: 640px) {
+            .hero-headline { font-size: 2.4rem; }
+            .pipeline-steps-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Top Public Navigation Bar -->
+    <nav class="public-navbar">
+        <a href="{{ url_for('index') }}" class="public-brand">
+            <div class="sidebar-brand-icon">
+                <i class="fas fa-heartbeat"></i>
+            </div>
+            <div>
+                <div class="brand-name">OralVision AI</div>
+                <div class="brand-badge">Clinical Diagnostics</div>
+            </div>
+        </a>
+
+        <ul class="public-nav-menu">
+            <li><a href="{{ url_for('index') }}" class="public-nav-link active">Home</a></li>
+            <li><a href="#workflow" class="public-nav-link">Screening Pipeline</a></li>
+            <li><a href="{{ url_for('about') }}" class="public-nav-link">AI Architecture</a></li>
+            <li><a href="{{ url_for('recommendations') }}" class="public-nav-link">Clinical Guidelines</a></li>
+            <li><a href="#faq" class="public-nav-link">FAQ</a></li>
+        </ul>
+
+        <div class="public-nav-actions">
+            <button class="icon-btn-action theme-toggle-btn" title="Toggle Theme">
+                <i class="fas fa-moon"></i>
+            </button>
+            {% if current_user.is_authenticated %}
+                <a href="{{ url_for('dashboard') }}" class="btn-prime">
+                    <i class="fas fa-th-large"></i> Clinical Dashboard
+                </a>
+            {% else %}
+                <a href="{{ url_for('login') }}" class="btn-subtle">
+                    <i class="fas fa-sign-in-alt"></i> Sign In
+                </a>
+                <a href="{{ url_for('upload_page') }}" class="btn-prime">
+                    <i class="fas fa-microscope"></i> Start Screening
+                </a>
+            {% endif %}
+        </div>
+    </nav>
+
+    <!-- SECTION 1: HERO SECTION -->
+    <header class="hero-banner">
+        <div>
+            <div class="telemetry-indicator-pill" style="margin-bottom: var(--sp-4);">
+                <span class="pulse-dot-green"></span>
+                <span>DenseNet201 Deep Neural Network Online</span>
+            </div>
+            <h1 class="hero-headline">
+                Intelligent Oral Screening. <br>
+                <span class="gradient-text">Explainable AI.</span>
+            </h1>
+            <p class="hero-subtext">
+                Enterprise deep learning platform for tri-class oral lesion classification with real-time Grad-CAM visual feature attribution and automated clinical reporting.
+            </p>
+            <div class="hero-cta-group">
+                <a href="{{ url_for('upload_page') }}" class="btn-prime" style="padding: 0.95rem 2rem; font-size: 1.05rem;">
+                    <i class="fas fa-upload"></i> Start Clinical Screening
+                </a>
+                <a href="{{ url_for('about') }}" class="btn-subtle" style="padding: 0.95rem 2rem; font-size: 1.05rem;">
+                    <i class="fas fa-microchip"></i> Explore AI Architecture
+                </a>
+            </div>
+        </div>
+
+        <!-- Live Visualizer Preview Widget -->
+        <div class="hero-visual-card">
+            <div class="card-header-flex">
+                <div class="card-title-lg">
+                    <i class="fas fa-shield-virus" style="color: var(--color-electric-cyan);"></i>
+                    <span>Real-Time Diagnostic Studio Preview</span>
+                </div>
+                <div class="badge-status normal">
+                    <i class="fas fa-check-circle"></i> Validated
+                </div>
+            </div>
+
+            <div style="background: rgba(0,0,0,0.4); border-radius: var(--radius-md); padding: var(--sp-4); border: 1px solid var(--color-border); margin-bottom: var(--sp-4);">
+                <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: var(--sp-2);">
+                    <span style="font-weight: 700; font-size: 1.2rem; color: var(--color-electric-cyan);">DenseNet201 Softmax Output</span>
+                    <span style="font-family: 'JetBrains Mono'; font-weight: 800; font-size: 1.3rem; color: var(--color-success);">94.07%</span>
+                </div>
+                <div style="background: rgba(255,255,255,0.08); height: 10px; border-radius: var(--radius-full); overflow: hidden;">
+                    <div style="width: 94.07%; height: 100%; background: linear-gradient(90deg, var(--color-medical-teal), var(--color-electric-cyan));"></div>
+                </div>
+                <div style="display: flex; justify-content: space-between; font-size: 0.78rem; color: var(--color-text-muted); margin-top: var(--sp-2);">
+                    <span>Class 0: Normal (94.07%)</span>
+                    <span>Class 1: Pre-Cancer (3.17%)</span>
+                    <span>Class 2: Oral Cancer (2.76%)</span>
+                </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--sp-3); font-size: 0.85rem;">
+                <div style="background: var(--glass-bg-subtle); padding: var(--sp-3); border-radius: var(--radius-sm); border: 1px solid var(--color-border);">
+                    <div style="color: var(--color-text-muted); font-size: 0.75rem; text-transform: uppercase;">Decision Margin</div>
+                    <div style="font-weight: 700; color: var(--color-text-primary); font-family: 'JetBrains Mono';">+90.9% (Decisive)</div>
+                </div>
+                <div style="background: var(--glass-bg-subtle); padding: var(--sp-3); border-radius: var(--radius-sm); border: 1px solid var(--color-border);">
+                    <div style="color: var(--color-text-muted); font-size: 0.75rem; text-transform: uppercase;">Attribution Map</div>
+                    <div style="font-weight: 700; color: var(--color-text-primary); font-family: 'JetBrains Mono';">Grad-CAM conv5</div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- SECTION 2: AI SCREENING WORKFLOW PIPELINE -->
+    <section id="workflow" style="padding: var(--sp-16) var(--sp-8); max-width: 1560px; margin: 0 auto;">
+        <div style="text-align: center; max-width: 720px; margin: 0 auto var(--sp-10);">
+            <div class="telemetry-indicator-pill" style="margin-bottom: var(--sp-3);">
+                <i class="fas fa-stream"></i>
+                <span>Pipeline Architecture</span>
+            </div>
+            <h2 style="font-size: 2.4rem; margin-bottom: var(--sp-3);">End-to-End Clinical Screening Workflow</h2>
+            <p style="color: var(--color-text-secondary); font-size: 1.05rem;">
+                Rigorous processing standard ensuring input integrity, deep representation extraction, and explainable attribution before report generation.
+            </p>
+        </div>
+
+        <div class="pipeline-steps-grid">
+            <div class="step-clinical-card">
+                <div class="step-index-badge">01</div>
+                <h3 style="font-size: 1.15rem; margin-bottom: var(--sp-2);">Image Acquisition</h3>
+                <p style="color: var(--color-text-secondary); font-size: 0.88rem; line-height: 1.6;">
+                    Client-side validation, MIME-type inspection, and upload via authenticated endpoints with strict 16MB boundary constraints.
+                </p>
+            </div>
+
+            <div class="step-clinical-card">
+                <div class="step-index-badge">02</div>
+                <h3 style="font-size: 1.15rem; margin-bottom: var(--sp-2);">Tensor Normalization</h3>
+                <p style="color: var(--color-text-secondary); font-size: 0.88rem; line-height: 1.6;">
+                    Pillow-verified RGB conversion, 224&times;224 spatial resizing, and float32 normalization scaled to [0.0, 1.0] interval.
+                </p>
+            </div>
+
+            <div class="step-clinical-card">
+                <div class="step-index-badge">03</div>
+                <h3 style="font-size: 1.15rem; margin-bottom: var(--sp-2);">DenseNet201 Inference</h3>
+                <p style="color: var(--color-text-secondary); font-size: 0.88rem; line-height: 1.6;">
+                    Deep feature extraction across 201 densely connected layers with softmax probability generation and certainty margin checks.
+                </p>
+            </div>
+
+            <div class="step-clinical-card">
+                <div class="step-index-badge">04</div>
+                <h3 style="font-size: 1.15rem; margin-bottom: var(--sp-2);">Grad-CAM & Report</h3>
+                <p style="color: var(--color-text-secondary); font-size: 0.88rem; line-height: 1.6;">
+                    Convolutional gradient attribution overlay and automated ReportLab PDF export with physician-ready documentation.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- SECTION 3: THREE-CLASS TAXONOMY -->
+    <section style="padding: var(--sp-12) var(--sp-8); background: var(--color-secondary-bg); border-top: 1px solid var(--color-border); border-bottom: 1px solid var(--color-border);">
+        <div style="max-width: 1560px; margin: 0 auto;">
+            <div style="text-align: center; max-width: 720px; margin: 0 auto var(--sp-8);">
+                <div class="telemetry-indicator-pill" style="margin-bottom: var(--sp-3);">
+                    <i class="fas fa-tags"></i>
+                    <span>Target Classes</span>
+                </div>
+                <h2 style="font-size: 2.4rem; margin-bottom: var(--sp-3);">Three-Tier Clinical Classification</h2>
+                <p style="color: var(--color-text-secondary); font-size: 1.05rem;">
+                    Trained specifically on clinical oral mucosal photography to distinguish healthy tissue from dysplasia and invasive carcinoma.
+                </p>
+            </div>
+
+            <div class="taxonomy-grid">
+                <div class="taxonomy-card normal">
+                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--sp-4);">
+                        <span class="badge-status normal"><i class="fas fa-check-circle"></i> Class 0</span>
+                        <i class="fas fa-shield-alt" style="font-size: 1.8rem; color: var(--color-success);"></i>
+                    </div>
+                    <h3 style="font-size: 1.35rem; margin-bottom: var(--sp-2); color: var(--color-success);">Normal Mucosa</h3>
+                    <p style="color: var(--color-text-secondary); font-size: 0.9rem; line-height: 1.6;">
+                        Healthy oral mucous membrane without evidence of epithelial dysplasia, inflammatory hyperplasia, or neoplastic alterations.
+                    </p>
+                </div>
+
+                <div class="taxonomy-card precancer">
+                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--sp-4);">
+                        <span class="badge-status precancer"><i class="fas fa-exclamation-circle"></i> Class 1</span>
+                        <i class="fas fa-shield-virus" style="font-size: 1.8rem; color: var(--color-warning);"></i>
+                    </div>
+                    <h3 style="font-size: 1.35rem; margin-bottom: var(--sp-2); color: var(--color-warning);">Pre-Cancer / Dysplasia</h3>
+                    <p style="color: var(--color-text-secondary); font-size: 0.9rem; line-height: 1.6;">
+                        Potentially malignant oral disorders (PMOD) including leukoplakia, erythroplakia, and submucous fibrosis requiring monitoring.
+                    </p>
+                </div>
+
+                <div class="taxonomy-card cancer">
+                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--sp-4);">
+                        <span class="badge-status cancer"><i class="fas fa-radiation"></i> Class 2</span>
+                        <i class="fas fa-exclamation-triangle" style="font-size: 1.8rem; color: var(--color-danger);"></i>
+                    </div>
+                    <h3 style="font-size: 1.35rem; margin-bottom: var(--sp-2); color: var(--color-danger);">Oral Malignancy</h3>
+                    <p style="color: var(--color-text-secondary); font-size: 0.9rem; line-height: 1.6;">
+                        Features consistent with oral squamous cell carcinoma (OSCC) exhibiting ulceration, rolled margins, and tissue induration.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SECTION 4: FAQ SECTION -->
+    <section id="faq" style="padding: var(--sp-16) var(--sp-8); max-width: 980px; margin: 0 auto;">
+        <div style="text-align: center; margin-bottom: var(--sp-10);">
+            <div class="telemetry-indicator-pill" style="margin-bottom: var(--sp-3);">
+                <i class="fas fa-question-circle"></i>
+                <span>Clinical & Technical FAQ</span>
+            </div>
+            <h2 style="font-size: 2.4rem; margin-bottom: var(--sp-3);">Frequently Asked Questions</h2>
+        </div>
+
+        <div class="faq-accordion-item">
+            <button class="faq-question-btn" onclick="toggleFaq(this)">
+                <span>What deep learning model powers OralVision AI?</span>
+                <i class="fas fa-chevron-down faq-icon"></i>
+            </button>
+            <div class="faq-answer-panel">
+                OralVision AI utilizes a specialized DenseNet201 (Dense Convolutional Network with 201 layers) architecture. DenseNet connects each layer to every other layer in a feed-forward fashion, ensuring maximum information flow and minimizing feature vanishing.
+            </div>
+        </div>
+
+        <div class="faq-accordion-item">
+            <button class="faq-question-btn" onclick="toggleFaq(this)">
+                <span>What is Grad-CAM explainability and why is it essential?</span>
+                <i class="fas fa-chevron-down faq-icon"></i>
+            </button>
+            <div class="faq-answer-panel">
+                Gradient-weighted Class Activation Mapping (Grad-CAM) calculates the gradients of the classification score with respect to the final convolutional feature maps (conv5 block). It produces a visual heatmap highlighting the exact spatial regions of the lesion that influenced the AI decision.
+            </div>
+        </div>
+
+        <div class="faq-accordion-item">
+            <button class="faq-question-btn" onclick="toggleFaq(this)">
+                <span>How does the AI handle ambiguous or low-confidence photographs?</span>
+                <i class="fas fa-chevron-down faq-icon"></i>
+            </button>
+            <div class="faq-answer-panel">
+                OralVision implements a strict abstention rule: if the top predicted class has less than 60% confidence or the margin between the top two classes is under 10%, the system refrains from guessing and labels the output as "Inconclusive / Needs Review".
+            </div>
+        </div>
+
+        <div class="faq-accordion-item">
+            <button class="faq-question-btn" onclick="toggleFaq(this)">
+                <span>Is OralVision AI a certified clinical medical device?</span>
+                <i class="fas fa-chevron-down faq-icon"></i>
+            </button>
+            <div class="faq-answer-panel">
+                No. OralVision AI is an academic machine learning classification tool intended for education, triaging assistance, and engineering evaluation. It is not an automated diagnostic device, and histopathological biopsy by a licensed pathologist remains required.
+            </div>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer style="background: var(--color-secondary-bg); border-top: 1px solid var(--color-border); padding: var(--sp-12) var(--sp-8); color: var(--color-text-secondary); font-size: 0.9rem;">
+        <div style="max-width: 1560px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: var(--sp-6);">
+            <div style="display: flex; align-items: center; gap: var(--sp-3);">
+                <div class="sidebar-brand-icon" style="width: 32px; height: 32px; font-size: 0.9rem;">
+                    <i class="fas fa-heartbeat"></i>
+                </div>
+                <span style="font-weight: 800; color: var(--color-text-primary);">OralVision AI</span>
+                <span style="margin-left: var(--sp-2); font-size: 0.8rem; color: var(--color-text-muted);">&copy; 2026 Academic Engineering Project.</span>
+            </div>
+
+            <div style="display: flex; gap: var(--sp-6);">
+                <a href="{{ url_for('about') }}" style="color: var(--color-text-secondary);">Architecture</a>
+                <a href="{{ url_for('recommendations') }}" style="color: var(--color-text-secondary);">Guidelines</a>
+                <a href="{{ url_for('upload_page') }}" style="color: var(--color-text-secondary);">Screening</a>
+                <a href="{{ url_for('login') }}" style="color: var(--color-text-secondary);">Practitioner Portal</a>
+            </div>
+        </div>
+    </footer>
+
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    <script>
+        function toggleFaq(btn) {
+            const item = btn.parentElement;
+            item.classList.toggle('active');
+        }
+    </script>
+</body>
+</html>

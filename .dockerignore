@@ -1,0 +1,13 @@
+.git
+.github
+.vscode
+__pycache__
+*.pyc
+*.pyo
+.venv
+venv
+env
+instance
+.env
+.env.local
+oral_cancer_train_test_split

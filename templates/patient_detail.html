@@ -1,0 +1,746 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ patient.name }} - Patient Details</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/glass.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="glass-container">
+        <!-- Header Section -->
+        <div class="header">
+            <h1><i class="fas fa-user"></i> {{ patient.name }}</h1>
+            <p>Complete patient information and analysis history</p>
+        </div>
+
+        <!-- Navigation -->
+        <div class="nav-container">
+            <a href="{{ url_for('index') }}" class="nav-btn">
+                <i class="fas fa-home"></i> Home
+            </a>
+            <a href="{{ url_for('dashboard') }}" class="nav-btn">
+                <i class="fas fa-tachometer-alt"></i> Dashboard
+            </a>
+            <a href="{{ url_for('patient_detail', patient_id=patient.id) }}" class="nav-btn" style="background: rgba(255, 255, 255, 0.3);">
+                <i class="fas fa-user"></i> Patient Details
+            </a>
+            <a href="{{ url_for('analysis_page', patient_id=patient.id) }}" class="nav-btn">
+                <i class="fas fa-microscope"></i> New Analysis
+            </a>
+            <a href="{{ url_for('logout') }}" class="nav-btn">
+                <i class="fas fa-sign-out-alt"></i> Logout
+            </a>
+        </div>
+
+        <!-- Patient Information Card -->
+        <div class="glass-container" style="margin-top: 1rem;">
+            <div class="patient-header">
+                <div class="patient-avatar">
+                    <div class="avatar-large">
+                        <i class="fas fa-user"></i>
+                    </div>
+                </div>
+                <div class="patient-basic-info">
+                    <h2 style="color: white; margin-bottom: 0.5rem;">{{ patient.name }}</h2>
+                    <div class="patient-meta">
+                        <span class="meta-item">
+                            <i class="fas fa-birthday-cake"></i> {{ patient.age }} years old
+                        </span>
+                        <span class="meta-item">
+                            <i class="fas fa-venus-mars"></i> {{ patient.gender }}
+                        </span>
+                        {% if patient.phone %}
+                        <span class="meta-item">
+                            <i class="fas fa-phone"></i> {{ patient.phone }}
+                        </span>
+                        {% endif %}
+                    </div>
+                    <div class="patient-stats">
+                        <div class="stat-item">
+                            <span class="stat-number">{{ analyses|length }}</span>
+                            <span class="stat-label">Analyses</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-number">{{ patient.created_at.strftime('%m/%d/%Y') }}</span>
+                            <span class="stat-label">Registered</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="patient-actions">
+                    <a href="{{ url_for('analysis_page', patient_id=patient.id) }}" class="btn btn-primary">
+                        <i class="fas fa-microscope"></i> New Analysis
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Detailed Patient Information -->
+        <div class="info-grid">
+            <!-- Medical Information -->
+            <div class="info-card">
+                <h3 class="card-title">
+                    <i class="fas fa-heartbeat"></i> Medical Information
+                </h3>
+                <div class="info-content">
+                    {% if patient.sugar_level or patient.blood_pressure or patient.weight or patient.height %}
+                        <div class="info-row">
+                            {% if patient.sugar_level %}
+                            <div class="info-item">
+                                <span class="info-label">Blood Sugar</span>
+                                <span class="info-value">{{ patient.sugar_level }} mg/dL</span>
+                            </div>
+                            {% endif %}
+                            {% if patient.blood_pressure %}
+                            <div class="info-item">
+                                <span class="info-label">Blood Pressure</span>
+                                <span class="info-value">{{ patient.blood_pressure }}</span>
+                            </div>
+                            {% endif %}
+                        </div>
+                        <div class="info-row">
+                            {% if patient.weight %}
+                            <div class="info-item">
+                                <span class="info-label">Weight</span>
+                                <span class="info-value">{{ patient.weight }} kg</span>
+                            </div>
+                            {% endif %}
+                            {% if patient.height %}
+                            <div class="info-item">
+                                <span class="info-label">Height</span>
+                                <span class="info-value">{{ patient.height }} cm</span>
+                            </div>
+                            {% endif %}
+                        </div>
+                        {% if patient.weight and patient.height %}
+                        <div class="info-row">
+                            <div class="info-item">
+                                <span class="info-label">BMI</span>
+                                {% set bmi = (patient.weight / ((patient.height / 100) ** 2)) %}
+                                <span class="info-value bmi-value" data-bmi="{{ bmi }}">{{ "%.1f"|format(bmi) }}</span>
+                            </div>
+                        </div>
+                        {% endif %}
+                    {% else %}
+                        <p style="color: rgba(255, 255, 255, 0.6); text-align: center; padding: 2rem;">
+                            No medical information recorded
+                        </p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Doctor Information -->
+            <div class="info-card">
+                <h3 class="card-title">
+                    <i class="fas fa-user-md"></i> Doctor Information
+                </h3>
+                <div class="info-content">
+                    {% if patient.doctor_name %}
+                        <div class="info-item">
+                            <span class="info-label">Attending Doctor</span>
+                            <span class="info-value">Dr. {{ patient.doctor_name }}</span>
+                        </div>
+                    {% else %}
+                        <p style="color: rgba(255, 255, 255, 0.6); text-align: center; padding: 2rem;">
+                            No doctor assigned
+                        </p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Contact Information -->
+            <div class="info-card">
+                <h3 class="card-title">
+                    <i class="fas fa-address-card"></i> Contact Information
+                </h3>
+                <div class="info-content">
+                    {% if patient.phone or patient.address %}
+                        {% if patient.phone %}
+                        <div class="info-item">
+                            <span class="info-label">Phone</span>
+                            <span class="info-value">{{ patient.phone }}</span>
+                        </div>
+                        {% endif %}
+                        {% if patient.address %}
+                        <div class="info-item">
+                            <span class="info-label">Address</span>
+                            <span class="info-value">{{ patient.address }}</span>
+                        </div>
+                        {% endif %}
+                    {% else %}
+                        <p style="color: rgba(255, 255, 255, 0.6); text-align: center; padding: 2rem;">
+                            No contact information recorded
+                        </p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Analysis History -->
+        <div class="glass-container" style="margin-top: 2rem;">
+            <div class="section-header">
+                <h3 style="color: white; margin: 0;">
+                    <i class="fas fa-history"></i> Analysis History
+                </h3>
+                {% if analyses %}
+                <span class="analysis-count-badge">{{ analyses|length }} analyses</span>
+                {% endif %}
+            </div>
+            
+            {% if analyses %}
+                <div class="analyses-timeline">
+                    {% for analysis in analyses %}
+                    <div class="timeline-item">
+                        <div class="timeline-marker {{ 'normal' if analysis.prediction != 'Oral Cancer' else 'cancer' }}">
+                            <i class="fas fa-{{ 'check' if analysis.prediction != 'Oral Cancer' else 'exclamation-triangle' }}"></i>
+                        </div>
+                        <div class="timeline-content">
+                            <div class="analysis-card-detailed">
+                                <div class="analysis-image-large">
+                                    <img src="{{ url_for('protected_image', filename=analysis.image_filename) }}" 
+                                         alt="Analysis Image" onclick="openImageModal(this.src)">
+                                </div>
+                                <div class="analysis-details">
+                                    <div class="analysis-header">
+                                        <h4 class="analysis-title">
+                                            Analysis #{{ loop.revindex }}
+                                        </h4>
+                                        <div class="analysis-date">
+                                            <i class="fas fa-calendar"></i> 
+                                            {{ analysis.created_at.strftime('%B %d, %Y at %I:%M %p') }}
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="analysis-results">
+                                        <div class="result-item">
+                                            <span class="result-label">Prediction:</span>
+                                            <span class="prediction {{ 'normal' if analysis.prediction != 'Oral Cancer' else 'cancer' }}">
+                                                {{ analysis.prediction }}
+                                            </span>
+                                        </div>
+                                        <div class="result-item">
+                                            <span class="result-label">Confidence:</span>
+                                            <span class="confidence-bar">
+                                                <div class="confidence-fill" style="width: {{ analysis.confidence }}%"></div>
+                                                <span class="confidence-text">{{ analysis.confidence }}%</span>
+                                            </span>
+                                        </div>
+                                    </div>
+                                    
+                                    {% if analysis.medical_suggestion %}
+                                    <div class="medical-recommendation">
+                                        {% set suggestion = analysis.medical_suggestion|from_json %}
+                                        {% if suggestion and suggestion.title %}
+                                        <h5><i class="fas fa-stethoscope"></i> Medical Recommendation</h5>
+                                        <p><strong>{{ suggestion.title }}</strong></p>
+                                        <p>{{ suggestion.message }}</p>
+                                        <p class="advice"><i class="fas fa-lightbulb"></i> {{ suggestion.advice }}</p>
+                                        {% else %}
+                                        <h5><i class="fas fa-stethoscope"></i> Medical Recommendation</h5>
+                                        <p>{{ analysis.medical_suggestion }}</p>
+                                        {% endif %}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                <div class="analysis-actions-detailed">
+                                    <a href="{{ url_for('download_report', analysis_id=analysis.id) }}" 
+                                       class="btn btn-success" title="Download PDF Report">
+                                        <i class="fas fa-download"></i> Download Report
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div style="text-align: center; padding: 3rem;">
+                    <i class="fas fa-microscope" style="font-size: 4rem; color: rgba(255, 255, 255, 0.3); margin-bottom: 1rem;"></i>
+                    <h4 style="color: rgba(255, 255, 255, 0.8); margin-bottom: 1rem;">No Analyses Yet</h4>
+                    <p style="color: rgba(255, 255, 255, 0.6); margin-bottom: 2rem;">
+                        Start by performing the first AI analysis for {{ patient.name }}.
+                    </p>
+                    <a href="{{ url_for('analysis_page', patient_id=patient.id) }}" class="btn btn-primary">
+                        <i class="fas fa-microscope"></i> Start First Analysis
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Image Modal -->
+    <div id="imageModal" class="modal" onclick="closeImageModal()">
+        <div class="modal-content">
+            <span class="close" onclick="closeImageModal()">&times;</span>
+            <img id="modalImage" src="" alt="Full Size Image">
+        </div>
+    </div>
+
+    <!-- Custom CSS for patient details -->
+    <style>
+        .patient-header {
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+            padding: 2rem;
+            background: linear-gradient(135deg, rgba(79, 172, 254, 0.1), rgba(67, 233, 123, 0.1));
+            border-radius: 15px;
+        }
+
+        .avatar-large {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #22d3ee, #34d399);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            color: white;
+        }
+
+        .patient-basic-info {
+            flex: 1;
+        }
+
+        .patient-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.9rem;
+        }
+
+        .meta-item i {
+            color: #22d3ee;
+        }
+
+        .patient-stats {
+            display: flex;
+            gap: 2rem;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-number {
+            display: block;
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #22d3ee;
+        }
+
+        .stat-label {
+            font-size: 0.8rem;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        .info-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            padding: 1.5rem;
+            border-left: 4px solid #22d3ee;
+        }
+
+        .card-title {
+            color: white;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .info-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .info-item {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
+        .info-label {
+            font-size: 0.8rem;
+            color: rgba(255, 255, 255, 0.6);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .info-value {
+            color: white;
+            font-weight: 500;
+        }
+
+        .bmi-value {
+            padding: 0.25rem 0.5rem;
+            border-radius: 15px;
+            font-size: 0.9rem;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .analysis-count-badge {
+            background: rgba(79, 172, 254, 0.2);
+            color: #22d3ee;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .analyses-timeline {
+            position: relative;
+            padding-left: 2rem;
+        }
+
+        .analyses-timeline::before {
+            content: '';
+            position: absolute;
+            left: 1rem;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: linear-gradient(to bottom, #22d3ee, #34d399);
+        }
+
+        .timeline-item {
+            position: relative;
+            margin-bottom: 2rem;
+        }
+
+        .timeline-marker {
+            position: absolute;
+            left: -2rem;
+            top: 1rem;
+            width: 2rem;
+            height: 2rem;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            color: white;
+            z-index: 1;
+        }
+
+        .timeline-marker.normal {
+            background: #34d399;
+        }
+
+        .timeline-marker.cancer {
+            background: #f87171;
+        }
+
+        .analysis-card-detailed {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 1.5rem;
+            display: grid;
+            grid-template-columns: 150px 1fr auto;
+            gap: 1.5rem;
+            align-items: start;
+        }
+
+        .analysis-image-large img {
+            width: 150px;
+            height: 150px;
+            object-fit: cover;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .analysis-image-large img:hover {
+            transform: scale(1.05);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+        }
+
+        .analysis-header {
+            margin-bottom: 1rem;
+        }
+
+        .analysis-title {
+            color: white;
+            margin-bottom: 0.5rem;
+        }
+
+        .analysis-date {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 0.9rem;
+        }
+
+        .analysis-results {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+        }
+
+        .result-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .result-label {
+            min-width: 80px;
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .prediction {
+            padding: 0.25rem 0.75rem;
+            border-radius: 15px;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .prediction.normal {
+            background: rgba(67, 233, 123, 0.2);
+            color: #34d399;
+        }
+
+        .prediction.cancer {
+            background: rgba(255, 107, 107, 0.2);
+            color: #f87171;
+        }
+
+        .confidence-bar {
+            position: relative;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            height: 20px;
+            min-width: 120px;
+            overflow: hidden;
+        }
+
+        .confidence-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #22d3ee, #34d399);
+            transition: width 0.3s ease;
+        }
+
+        .confidence-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: white;
+        }
+
+        .confidence_band {
+            padding: 0.25rem 0.75rem;
+            border-radius: 15px;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .confidence.low {
+            background: rgba(67, 233, 123, 0.2);
+            color: #34d399;
+        }
+
+        .confidence.moderate {
+            background: rgba(254, 225, 64, 0.2);
+            color: #fbbf24;
+        }
+
+        .confidence.high {
+            background: rgba(255, 107, 107, 0.2);
+            color: #f87171;
+        }
+
+        .medical-recommendation {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 1rem;
+            border-radius: 10px;
+            border-left: 4px solid #fbbf24;
+        }
+
+        .medical-recommendation h5 {
+            color: #fbbf24;
+            margin-bottom: 0.5rem;
+        }
+
+        .medical-recommendation p {
+            color: rgba(255, 255, 255, 0.8);
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .advice {
+            color: rgba(255, 255, 255, 0.7) !important;
+            font-style: italic;
+        }
+
+        .analysis-actions-detailed {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        /* Modal styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.9);
+        }
+
+        .modal-content {
+            position: relative;
+            margin: auto;
+            padding: 20px;
+            width: 90%;
+            max-width: 800px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+
+        .modal-content img {
+            width: 100%;
+            height: auto;
+            border-radius: 10px;
+        }
+
+        .close {
+            position: absolute;
+            top: 10px;
+            right: 25px;
+            color: white;
+            font-size: 35px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .close:hover {
+            color: #22d3ee;
+        }
+
+        @media (max-width: 768px) {
+            .patient-header {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .patient-stats {
+                justify-content: center;
+            }
+            
+            .info-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .analysis-card-detailed {
+                grid-template-columns: 1fr;
+                text-align: center;
+            }
+            
+            .result-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.5rem;
+            }
+        }
+    </style>
+
+    <!-- JavaScript for enhanced functionality -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // BMI color coding
+            const bmiElements = document.querySelectorAll('.bmi-value');
+            bmiElements.forEach(element => {
+                const bmi = parseFloat(element.dataset.bmi);
+                let color = '';
+                
+                if (bmi < 18.5) {
+                    color = '#22d3ee';
+                } else if (bmi < 25) {
+                    color = '#34d399';
+                } else if (bmi < 30) {
+                    color = '#fbbf24';
+                } else {
+                    color = '#f87171';
+                }
+                
+                element.style.backgroundColor = `${color}20`;
+                element.style.color = color;
+            });
+
+            // Animate confidence bars
+            const confidenceBars = document.querySelectorAll('.confidence-fill');
+            confidenceBars.forEach(bar => {
+                const width = bar.style.width;
+                bar.style.width = '0%';
+                setTimeout(() => {
+                    bar.style.width = width;
+                }, 500);
+            });
+
+            // Add hover effects to timeline items
+            const timelineItems = document.querySelectorAll('.timeline-item');
+            timelineItems.forEach(item => {
+                item.addEventListener('mouseenter', function() {
+                    this.style.transform = 'translateX(10px)';
+                });
+                
+                item.addEventListener('mouseleave', function() {
+                    this.style.transform = 'translateX(0)';
+                });
+            });
+        });
+
+        // Image modal functions
+        function openImageModal(src) {
+            const modal = document.getElementById('imageModal');
+            const modalImg = document.getElementById('modalImage');
+            modal.style.display = 'block';
+            modalImg.src = src;
+        }
+
+        function closeImageModal() {
+            document.getElementById('imageModal').style.display = 'none';
+        }
+
+        // Close modal on escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeImageModal();
+            }
+        });
+    </script>
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>

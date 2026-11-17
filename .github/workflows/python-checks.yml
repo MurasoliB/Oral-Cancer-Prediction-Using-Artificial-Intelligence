@@ -1,0 +1,26 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+      - run: pip install -r requirements.txt
+      - name: Lint
+        run: ruff check . --exclude model/densenet201_model.keras
+      - name: Compile
+        run: python -m compileall -q .
+      - name: Tests
+        run: pytest -q
+      - name: Docker build
+        run: docker build -t oralvision-ai:ci .

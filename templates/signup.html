@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Practitioner Registration — OralVision AI</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/glass.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='oralvision.ico') }}">
+    <style>
+        .auth-wrapper {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: var(--sp-8) var(--sp-4);
+        }
+
+        .auth-card-wide {
+            width: 100%;
+            max-width: 580px;
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-xl);
+            padding: var(--sp-8);
+            box-shadow: var(--glass-shadow);
+            backdrop-filter: blur(24px);
+        }
+
+        .auth-grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--sp-4);
+        }
+
+        @media (max-width: 600px) {
+            .auth-grid-2 { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="auth-wrapper">
+        <div class="auth-card-wide">
+            <div style="text-align: center; margin-bottom: var(--sp-6);">
+                <a href="{{ url_for('index') }}" class="sidebar-brand-icon" style="width: 48px; height: 48px; margin: 0 auto var(--sp-3); font-size: 1.3rem;">
+                    <i class="fas fa-heartbeat"></i>
+                </a>
+                <h1 style="font-size: 1.8rem; margin-bottom: var(--sp-2);">Register Practitioner</h1>
+                <p style="color: var(--color-text-secondary); font-size: 0.92rem;">
+                    Create medical professional access credentials
+                </p>
+            </div>
+
+            <!-- Flash messages -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    <div class="flash-box-wrap">
+                        {% for category, message in messages %}
+                            <div class="flash-alert {{ category }}">
+                                <i class="fas fa-{% if category == 'error' %}exclamation-triangle{% elif category == 'success' %}check-circle{% else %}info-circle{% endif %}"></i>
+                                <span>{{ message }}</span>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            {% endwith %}
+
+            <form method="POST" id="signupForm" onsubmit="return validateSignup()">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+                <div class="auth-grid-2">
+                    <div class="form-field-group">
+                        <label class="form-field-label" for="full_name">Full Name (with Title)</label>
+                        <input type="text" class="form-field-input" id="full_name" name="full_name" placeholder="Dr. Sarah Jenkins" required>
+                    </div>
+
+                    <div class="form-field-group">
+                        <label class="form-field-label" for="username">Username</label>
+                        <input type="text" class="form-field-input" id="username" name="username" placeholder="dr.sjenkins" required autocomplete="username">
+                    </div>
+                </div>
+
+                <div class="form-field-group">
+                    <label class="form-field-label" for="email">Institutional Email</label>
+                    <input type="email" class="form-field-input" id="email" name="email" placeholder="sjenkins@hospital.org" required autocomplete="email">
+                </div>
+
+                <div class="auth-grid-2">
+                    <div class="form-field-group">
+                        <label class="form-field-label" for="role">Clinical Role</label>
+                        <select class="form-field-select" id="role" name="role">
+                            <option value="Oncologist">Oral Oncologist</option>
+                            <option value="Surgeon">Maxillofacial Surgeon</option>
+                            <option value="Dentist">General Dental Practitioner</option>
+                            <option value="Pathologist">Oral Pathologist</option>
+                            <option value="Resident">Clinical Resident / Fellow</option>
+                        </select>
+                    </div>
+
+                    <div class="form-field-group">
+                        <label class="form-field-label" for="department">Hospital / Department</label>
+                        <input type="text" class="form-field-input" id="department" name="department" placeholder="Head & Neck Oncology">
+                    </div>
+                </div>
+
+                <div class="auth-grid-2">
+                    <div class="form-field-group">
+                        <label class="form-field-label" for="password">Password (min 8 chars)</label>
+                        <input type="password" class="form-field-input" id="password" name="password" required minlength="8" autocomplete="new-password">
+                    </div>
+
+                    <div class="form-field-group">
+                        <label class="form-field-label" for="confirm_password">Confirm Password</label>
+                        <input type="password" class="form-field-input" id="confirm_password" name="confirm_password" required minlength="8" autocomplete="new-password">
+                    </div>
+                </div>
+
+                <div id="passwordError" style="color: var(--color-danger); font-size: 0.85rem; margin-bottom: var(--sp-4); display: none;">
+                    Passwords do not match. Please verify.
+                </div>
+
+                <button type="submit" class="btn-prime" style="width: 100%; padding: 0.85rem; font-size: 1rem; margin-top: var(--sp-2);">
+                    <i class="fas fa-user-plus"></i> Complete Registration
+                </button>
+            </form>
+
+            <div style="text-align: center; margin-top: var(--sp-6); font-size: 0.92rem; color: var(--color-text-secondary);">
+                Already registered? 
+                <a href="{{ url_for('login') }}" style="font-weight: 700;">Sign In</a>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    <script>
+        function validateSignup() {
+            const p1 = document.getElementById('password').value;
+            const p2 = document.getElementById('confirm_password').value;
+            const err = document.getElementById('passwordError');
+            if (p1 !== p2) {
+                err.style.display = 'block';
+                return false;
+            }
+            err.style.display = 'none';
+            return true;
+        }
+    </script>
+</body>
+</html>

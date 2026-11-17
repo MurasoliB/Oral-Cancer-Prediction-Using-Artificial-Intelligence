@@ -1,0 +1,73 @@
+# ==============================================================================
+# Python & Virtual Environments
+# ==============================================================================
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyo
+*.pyd
+*.egg-info/
+.Python
+build/
+dist/
+venv/
+venv_fixed/
+venv_tf213/
+env/
+.venv/
+.pytest_cache/
+.coverage
+htmlcov/
+
+# ==============================================================================
+# Flask Instance Data, Databases & Uploads (Never commit patient data)
+# ==============================================================================
+instance/
+*.db
+*.sqlite
+*.sqlite3
+uploads/
+temp_uploads/
+
+# ==============================================================================
+# Environment Variables, Secrets & API Keys
+# ==============================================================================
+.env
+.env.local
+.env.*.local
+*.pem
+*.key
+*.cert
+credentials.json
+token.json
+service-account*.json
+!.env.example
+
+# ==============================================================================
+# Raw Training Datasets (Exclude heavy dataset archives)
+# Note: Bundled trained model in model/densenet201_model.keras is intentionally
+# tracked so the application works out-of-the-box after cloning.
+# ==============================================================================
+oral_cancer_train_test_split/
+data/raw/
+data/processed/
+
+# ==============================================================================
+# IDE, Editor & OS Metadata
+# ==============================================================================
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ==============================================================================
+# Logs & Diagnostic Outputs
+# ==============================================================================
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*

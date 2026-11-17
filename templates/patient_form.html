@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>New Patient Intake — OralVision AI</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/glass.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='oralvision.ico') }}">
+    <style>
+        .form-section-header {
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: var(--color-electric-cyan);
+            margin-bottom: var(--sp-4);
+            padding-bottom: var(--sp-2);
+            border-bottom: 1px solid var(--color-border);
+            display: flex;
+            align-items: center;
+            gap: var(--sp-2);
+        }
+
+        .form-grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--sp-4);
+        }
+
+        .form-grid-3 {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: var(--sp-4);
+        }
+
+        @media (max-width: 768px) {
+            .form-grid-2, .form-grid-3 { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-layout">
+        <!-- SIDEBAR -->
+        <aside class="app-sidebar">
+            <div class="sidebar-header">
+                <a href="{{ url_for('dashboard') }}" class="sidebar-brand">
+                    <div class="sidebar-brand-icon"><i class="fas fa-heartbeat"></i></div>
+                    <div class="sidebar-brand-text">
+                        <span class="brand-name">OralVision AI</span>
+                        <span class="brand-badge">Clinical Suite</span>
+                    </div>
+                </a>
+                <button class="sidebar-toggle-btn" title="Toggle Sidebar"><i class="fas fa-chevron-left"></i></button>
+            </div>
+
+            <nav class="sidebar-nav">
+                <div class="nav-section-title">Clinical Hub</div>
+                <a href="{{ url_for('dashboard') }}" class="nav-item">
+                    <i class="fas fa-th-large"></i><span class="nav-label">Dashboard</span>
+                </a>
+                <a href="{{ url_for('dashboard') }}#patients-section" class="nav-item">
+                    <i class="fas fa-users"></i><span class="nav-label">Patients Directory</span>
+                </a>
+                <a href="{{ url_for('new_patient') }}" class="nav-item active">
+                    <i class="fas fa-user-plus"></i><span class="nav-label">Add New Patient</span>
+                </a>
+                <a href="{{ url_for('upload_page') }}" class="nav-item">
+                    <i class="fas fa-microscope"></i><span class="nav-label">Image Screening</span>
+                </a>
+
+                <div class="nav-section-title">Clinical Intelligence</div>
+                <a href="{{ url_for('recommendations') }}" class="nav-item">
+                    <i class="fas fa-book-medical"></i><span class="nav-label">Recommendations</span>
+                </a>
+                <a href="{{ url_for('about') }}" class="nav-item">
+                    <i class="fas fa-microchip"></i><span class="nav-label">AI Architecture</span>
+                </a>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="user-profile-badge">
+                    <div class="user-avatar-circle">{{ current_user.full_name[:1] if current_user.full_name else 'D' }}</div>
+                    <div class="user-info-text">
+                        <span class="user-name">{{ current_user.full_name }}</span>
+                        <span class="user-role">Medical Practitioner</span>
+                    </div>
+                </div>
+                <a href="{{ url_for('logout') }}" class="btn-subtle" style="padding: 0.5rem; justify-content: center; font-size: 0.85rem;">
+                    <i class="fas fa-sign-out-alt"></i> Sign Out
+                </a>
+            </div>
+        </aside>
+
+        <!-- MAIN BODY -->
+        <div class="app-main">
+            <header class="app-topbar">
+                <div class="topbar-left">
+                    <button class="mobile-nav-toggle"><i class="fas fa-bars"></i></button>
+                    <div class="breadcrumb-nav">
+                        <a href="{{ url_for('dashboard') }}">OralVision</a>
+                        <span class="breadcrumb-separator">/</span>
+                        <a href="{{ url_for('dashboard') }}">Patients</a>
+                        <span class="breadcrumb-separator">/</span>
+                        <span class="breadcrumb-current">New Patient Intake</span>
+                    </div>
+                </div>
+                <div class="topbar-right">
+                    <button class="icon-btn-action theme-toggle-btn" title="Toggle Theme"><i class="fas fa-moon"></i></button>
+                </div>
+            </header>
+
+            <main class="app-content" style="max-width: 1100px;">
+                <!-- Flash messages -->
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        <div class="flash-box-wrap">
+                            {% for category, message in messages %}
+                                <div class="flash-alert {{ category }}">
+                                    <i class="fas fa-{% if category == 'error' %}exclamation-triangle{% elif category == 'success' %}check-circle{% else %}info-circle{% endif %}"></i>
+                                    <span>{{ message }}</span>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                {% endwith %}
+
+                <div class="card-clinical">
+                    <div class="card-header-flex">
+                        <div class="card-title-lg">
+                            <i class="fas fa-user-plus" style="color: var(--color-electric-cyan);"></i>
+                            <span>Clinical Patient Registration</span>
+                        </div>
+                        <span class="badge-status normal">Electronic Medical Record</span>
+                    </div>
+
+                    <form method="POST" id="newPatientForm">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+                        <!-- Section 1: Demographics -->
+                        <div class="form-section-header">
+                            <i class="fas fa-id-card"></i> Patient Demographics
+                        </div>
+
+                        <div class="form-grid-3">
+                            <div class="form-field-group">
+                                <label class="form-field-label" for="name">Full Legal Name *</label>
+                                <input type="text" class="form-field-input" id="name" name="name" placeholder="Johnathan Smith" required autofocus>
+                            </div>
+
+                            <div class="form-field-group">
+                                <label class="form-field-label" for="age">Age (Years) *</label>
+                                <input type="number" class="form-field-input" id="age" name="age" min="1" max="125" placeholder="52" required>
+                            </div>
+
+                            <div class="form-field-group">
+                                <label class="form-field-label" for="gender">Sex Assigned at Birth *</label>
+                                <select class="form-field-select" id="gender" name="gender" required>
+                                    <option value="" disabled selected>Select sex</option>
+                                    <option value="Male">Male</option>
+                                    <option value="Female">Female</option>
+                                    <option value="Other">Other / Non-Binary</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-grid-2">
+                            <div class="form-field-group">
+                                <label class="form-field-label" for="phone">Phone Number</label>
+                                <input type="tel" class="form-field-input" id="phone" name="phone" placeholder="+1 (555) 019-2834">
+                            </div>
+
+                            <div class="form-field-group">
+                                <label class="form-field-label" for="address">Residential Address</label>
+                                <input type="text" class="form-field-input" id="address" name="address" placeholder="104 Elm Street, City, State">
+                            </div>
+                        </div>
+
+                        <!-- Section 2: Vitals & Provider -->
+                        <div class="form-section-header" style="margin-top: var(--sp-4);">
+                            <i class="fas fa-heartbeat"></i> Vitals & Assigned Physician
+                        </div>
+
+                        <div class="form-grid-2">
+                            <div class="form-field-group">
+                                <label class="form-field-label" for="doctor_name">Attending Clinician / Doctor</label>
+                                <input type="text" class="form-field-input" id="doctor_name" name="doctor_name" value="{{ current_user.full_name }}" placeholder="Dr. Sarah Jenkins">
+                            </div>
+
+                            <div class="form-field-group">
+                                <label class="form-field-label" for="blood_pressure">Blood Pressure (mmHg)</label>
+                                <input type="text" class="form-field-input" id="blood_pressure" name="blood_pressure" placeholder="120/80">
+                            </div>
+                        </div>
+
+                        <div class="form-grid-3">
+                            <div class="form-field-group">
+                                <label class="form-field-label" for="sugar_level">Blood Glucose (mg/dL)</label>
+                                <input type="number" step="0.1" class="form-field-input" id="sugar_level" name="sugar_level" placeholder="95.5">
+                            </div>
+
+                            <div class="form-field-group">
+                                <label class="form-field-label" for="weight">Weight (kg)</label>
+                                <input type="number" step="0.1" class="form-field-input" id="weight" name="weight" placeholder="72.0">
+                            </div>
+
+                            <div class="form-field-group">
+                                <label class="form-field-label" for="height">Height (cm)</label>
+                                <input type="number" step="0.1" class="form-field-input" id="height" name="height" placeholder="175.0">
+                            </div>
+                        </div>
+
+                        <!-- Section 3: Clinical Notes -->
+                        <div class="form-section-header" style="margin-top: var(--sp-4);">
+                            <i class="fas fa-notes-medical"></i> Risk Factors & Medical History
+                        </div>
+
+                        <div class="form-field-group">
+                            <label class="form-field-label" for="medical_history">Clinical History, Tobacco / Alcohol Habits & Presentation</label>
+                            <textarea class="form-field-textarea" id="medical_history" name="medical_history" rows="3" placeholder="Patient reports persistent non-healing lesion on left lateral tongue border for 3 weeks. History of 15 pack-years smoking..."></textarea>
+                        </div>
+
+                        <div style="display: flex; justify-content: flex-end; gap: var(--sp-3); margin-top: var(--sp-6);">
+                            <a href="{{ url_for('dashboard') }}" class="btn-subtle">
+                                Cancel
+                            </a>
+                            <button type="submit" class="btn-prime">
+                                <i class="fas fa-check-circle"></i> Save & Open Patient Profile
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>

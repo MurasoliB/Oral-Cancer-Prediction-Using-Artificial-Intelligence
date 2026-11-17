@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: oral-lesion-ai
+    runtime: docker
+    plan: standard
+    healthCheckPath: /health
+    envVars:
+      - key: FLASK_ENV
+        value: production
+      - key: FLASK_SECRET_KEY
+        generateValue: true

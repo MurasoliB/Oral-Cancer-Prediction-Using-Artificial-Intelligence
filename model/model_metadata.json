@@ -1,0 +1,28 @@
+{
+  "model_name": "DenseNet201",
+  "framework": "TensorFlow/Keras",
+  "input_size": [
+    224,
+    224,
+    3
+  ],
+  "preprocessing": "RGB resize to 224x224, float32 pixel scaling by 1/255",
+  "classes": [
+    "Normal",
+    "Oral Cancer",
+    "Pre-Cancer"
+  ],
+  "class_indices": {
+    "Normal": 0,
+    "Oral Cancer": 1,
+    "Pre-Cancer": 2
+  },
+  "output": "softmax",
+  "artifact": "densenet201_model.keras",
+  "intended_use": "Academic image-classification demonstration",
+  "confidence_policy": {
+    "minimum_top_probability": 0.6,
+    "minimum_top2_margin": 0.1,
+    "inconclusive_class": "Inconclusive"
+  }
+}

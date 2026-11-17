@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clinical Upload - Lip & Tongue Cancer Detection</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/glass.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='oralvision.ico') }}">
+</head>
+<body>
+    <div class="glass-container">
+        <!-- Top Studio Navbar -->
+        <header class="studio-navbar">
+            <a href="{{ url_for('index') }}" class="studio-brand">
+                <div class="studio-brand-icon">
+                    <i class="fas fa-heartbeat"></i>
+                </div>
+                <div>
+                    <div class="studio-brand-title">OralVision AI</div>
+                    <div class="studio-brand-subtitle">Clinical Diagnostic Studio</div>
+                </div>
+            </a>
+
+            <div class="studio-telemetry">
+                <div class="telemetry-chip">
+                    <span class="telemetry-dot"></span>
+                    <span>Ready for Examination</span>
+                </div>
+                <div class="telemetry-chip">
+                    <i class="fas fa-shield-alt" style="color: var(--color-electric-cyan);"></i>
+                    <span>Secure In-Memory / Ephemeral</span>
+                </div>
+            </div>
+
+            <div class="studio-nav-actions">
+                <button class="studio-btn theme-toggle-btn" type="button" title="Toggle Theme" style="padding: 0.55rem 0.8rem;">
+                    <i class="fas fa-moon"></i>
+                </button>
+                <a href="{{ url_for('index') }}" class="studio-btn">
+                    <i class="fas fa-home"></i> Home
+                </a>
+                <a href="{{ url_for('dashboard') }}" class="studio-btn">
+                    <i class="fas fa-th-large"></i> Dashboard
+                </a>
+            </div>
+        </header>
+
+        <!-- Header -->
+        <div class="header">
+            <h1><i class="fas fa-cloud-upload-alt"></i> Clinical Image Examination</h1>
+            <p>Upload a focused photograph of the oral mucosa, lip, or tongue lesion for instant deep neural network classification</p>
+        </div>
+
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="flash-messages">
+                    {% for category, message in messages %}
+                        <div class="flash-message {{ category }}">
+                            <i class="fas fa-{% if category == 'error' %}exclamation-triangle{% elif category == 'success' %}check-circle{% else %}info-circle{% endif %}"></i>
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        <!-- Widescreen Upload Grid -->
+        <div class="upload-grid-widescreen">
+            <!-- Left: Upload Action Zone -->
+            <div class="visual-studio-card">
+                <div class="card-header-bar">
+                    <div class="card-title">
+                        <i class="fas fa-file-medical"></i> Select Pathology Specimen Image
+                    </div>
+                    <div style="font-size: 0.8rem; color: var(--color-text-muted); font-family: 'JetBrains Mono', monospace;">
+                        PNG, JPG, JPEG up to 16MB
+                    </div>
+                </div>
+
+                <form id="uploadForm" action="{{ url_for('upload_and_predict') }}" method="post" enctype="multipart/form-data">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    
+                    <div class="upload-area" id="uploadArea">
+                        <div class="upload-icon">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                        </div>
+                        <div class="upload-text">
+                            Drag & drop clinical photograph here
+                        </div>
+                        <div class="upload-subtext">
+                            or click anywhere to browse from your device
+                        </div>
+                        <input type="file" id="fileInput" name="file" accept="image/*" style="display: none;" required>
+                    </div>
+
+                    <!-- Live File Preview -->
+                    <div id="filePreview" style="display: none; margin-top: 1.5rem;">
+                        <div style="background: rgba(0,0,0,0.4); border-radius: var(--radius-md); padding: 1.25rem; text-align: center; border: 1px solid var(--color-border); box-shadow: inset 0 2px 10px rgba(0,0,0,0.3);">
+                            <img id="previewImage" src="" alt="Specimen Preview" style="max-height: 280px; max-width: 100%; border-radius: var(--radius-sm); object-fit: contain; box-shadow: 0 4px 16px rgba(0,0,0,0.5);">
+                            <div style="margin-top: 1rem; display: flex; align-items: center; justify-content: center; gap: 0.5rem; flex-wrap: wrap;">
+                                <span id="fileName" style="font-weight: 700; color: var(--color-text-primary); font-size: 0.95rem;"></span>
+                                <span id="fileSize" style="padding: 0.2rem 0.6rem; border-radius: var(--radius-full); background: rgba(54,185,199,0.15); color: var(--color-electric-cyan); font-family: 'JetBrains Mono', monospace; font-size: 0.82rem; font-weight: 700; border: 1px solid rgba(54,185,199,0.3);"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="text-align: center; margin-top: 2rem; display: flex; justify-content: center; gap: 1rem;">
+                        <button type="submit" class="action-btn primary" id="submitBtn" disabled>
+                            <i class="fas fa-microscope"></i> Run Neural Diagnostic
+                        </button>
+                        <button type="button" class="action-btn secondary" id="clearBtn" style="display: none;" onclick="clearFile()">
+                            <i class="fas fa-times"></i> Clear Selection
+                        </button>
+                    </div>
+                </form>
+
+                <!-- Processing Animation -->
+                <div class="loading" id="loadingDiv" style="display: none; text-align: center; padding: 2rem 0;">
+                    <div class="loading-spinner"></div>
+                    <h3 style="color: var(--color-text-primary); margin-bottom: 0.5rem; font-weight: 700;">Executing DenseNet201 Deep Learning Inference...</h3>
+                    <p style="color: var(--color-text-secondary); font-size: 0.92rem;">Computing Grad-CAM feature attribution maps and multi-class softmax probabilities</p>
+                </div>
+            </div>
+
+            <!-- Right: Clinical Preparation Guidelines -->
+            <div class="diagnostic-studio-card">
+                <div class="multiclass-card">
+                    <div class="card-header-bar">
+                        <div class="card-title">
+                            <i class="fas fa-clipboard-check"></i> Image Acquisition Standards
+                        </div>
+                    </div>
+
+                    <div style="display: flex; flex-direction: column; gap: 1.25rem;">
+                        <div style="display: flex; gap: 1rem; align-items: flex-start;">
+                            <div style="width: 40px; height: 40px; border-radius: var(--radius-sm); background: rgba(54, 185, 199, 0.15); display: flex; align-items: center; justify-content: center; color: var(--color-electric-cyan); font-size: 1.1rem; flex-shrink: 0; border: 1px solid rgba(54, 185, 199, 0.3);">
+                                <i class="fas fa-sun"></i>
+                            </div>
+                            <div>
+                                <div style="font-weight: 700; color: var(--color-text-primary); font-size: 0.95rem;">Optimal Illumination</div>
+                                <div style="font-size: 0.85rem; color: var(--color-text-secondary); line-height: 1.45; margin-top: 2px;">Ensure uniform illumination without harsh flash reflections on moist tissue surfaces.</div>
+                            </div>
+                        </div>
+
+                        <div style="display: flex; gap: 1rem; align-items: flex-start;">
+                            <div style="width: 40px; height: 40px; border-radius: var(--radius-sm); background: rgba(99, 102, 241, 0.15); display: flex; align-items: center; justify-content: center; color: #818CF8; font-size: 1.1rem; flex-shrink: 0; border: 1px solid rgba(99, 102, 241, 0.3);">
+                                <i class="fas fa-bullseye"></i>
+                            </div>
+                            <div>
+                                <div style="font-weight: 700; color: var(--color-text-primary); font-size: 0.95rem;">Clear Lesion Framing</div>
+                                <div style="font-size: 0.85rem; color: var(--color-text-secondary); line-height: 1.45; margin-top: 2px;">Center the mucosal lesion or ulceration. Avoid blurry images or out-of-focus macro shots.</div>
+                            </div>
+                        </div>
+
+                        <div style="display: flex; gap: 1rem; align-items: flex-start;">
+                            <div style="width: 40px; height: 40px; border-radius: var(--radius-sm); background: rgba(16, 185, 129, 0.15); display: flex; align-items: center; justify-content: center; color: #34D399; font-size: 1.1rem; flex-shrink: 0; border: 1px solid rgba(16, 185, 129, 0.3);">
+                                <i class="fas fa-shield-virus"></i>
+                            </div>
+                            <div>
+                                <div style="font-weight: 700; color: var(--color-text-primary); font-size: 0.95rem;">Three-Class Distinction</div>
+                                <div style="font-size: 0.85rem; color: var(--color-text-secondary); line-height: 1.45; margin-top: 2px;">Model evaluates for Normal tissue, Pre-Cancerous dysplasia, or Oral Cancerous malignancy.</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="protocol-card" style="border-left-color: #6366F1;">
+                    <div class="protocol-header">
+                        <i class="fas fa-lock" style="color: #818CF8;"></i> Clinical Data Privacy & Protection
+                    </div>
+                    <div class="protocol-message">
+                        All images are checked for valid RGB color spaces, verified for MIME integrity, and scrubbed via authenticated endpoints.
+                    </div>
+                    <div style="font-size: 0.82rem; color: var(--color-text-muted); line-height: 1.45;">
+                        Academic and engineering decision support only. Histopathological biopsy remains the gold standard.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    <script>
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+        const filePreview = document.getElementById('filePreview');
+        const previewImage = document.getElementById('previewImage');
+        const fileName = document.getElementById('fileName');
+        const fileSize = document.getElementById('fileSize');
+        const submitBtn = document.getElementById('submitBtn');
+        const clearBtn = document.getElementById('clearBtn');
+        const uploadForm = document.getElementById('uploadForm');
+        const loadingDiv = document.getElementById('loadingDiv');
+
+        uploadArea.addEventListener('click', () => fileInput.click());
+
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            uploadArea.addEventListener(eventName, preventDefaults, false);
+            document.body.addEventListener(eventName, preventDefaults, false);
+        });
+
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+
+        ['dragenter', 'dragover'].forEach(eventName => {
+            uploadArea.addEventListener(eventName, () => uploadArea.classList.add('dragover'), false);
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            uploadArea.addEventListener(eventName, () => uploadArea.classList.remove('dragover'), false);
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            if (files && files.length > 0) {
+                fileInput.files = files;
+                handleFile(files[0]);
+            }
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files && e.target.files.length > 0) {
+                handleFile(e.target.files[0]);
+            }
+        });
+
+        function handleFile(file) {
+            if (!file.type.startsWith('image/')) {
+                alert('Please upload an image file (PNG, JPG, JPEG, GIF, BMP)');
+                return;
+            }
+
+            if (file.size > 16 * 1024 * 1024) {
+                alert('File size exceeds the 16MB limit');
+                return;
+            }
+
+            fileName.textContent = file.name;
+            fileSize.textContent = `${(file.size / (1024 * 1024)).toFixed(2)} MB`;
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                previewImage.src = e.target.result;
+                filePreview.style.display = 'block';
+                submitBtn.disabled = false;
+                clearBtn.style.display = 'inline-flex';
+                uploadArea.style.display = 'none';
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function clearFile() {
+            fileInput.value = '';
+            filePreview.style.display = 'none';
+            submitBtn.disabled = true;
+            clearBtn.style.display = 'none';
+            uploadArea.style.display = 'flex';
+        }
+
+        uploadForm.addEventListener('submit', () => {
+            loadingDiv.style.display = 'block';
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+        });
+    </script>
+</body>
+</html>
